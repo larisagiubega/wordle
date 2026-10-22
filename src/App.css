@@ -249,6 +249,45 @@
   font-size: 10px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.language-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+.language-picker select {
+  min-width: 98px;
+  padding: 7px 9px;
+  border: 1px solid #dce3dc;
+  border-radius: 4px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.8);
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.language-picker select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.language-picker select:disabled {
+  cursor: progress;
+  opacity: 0.65;
+}
+
 .header-note-dot {
   width: 7px;
   height: 7px;
@@ -481,7 +520,11 @@ kbd {
   }
 
   .header-note {
-    font-size: 9px;
+    display: none;
+  }
+
+  .header-actions {
+    gap: 0;
   }
 
   .game-main {
