@@ -1,6 +1,7 @@
-//todo: find a good dictionary to use for this project. For now, we will use a hardcoded list of words.
+import wordleWordlist from 'wordle-wordlist';
+ const wordsDictionary: string[] = wordleWordlist.cache.answers;
 
-const wordsDict = [
+ const presetWordsDictionary: string[] = [
   'apple',
   'crane',
   'flame',
@@ -13,16 +14,22 @@ const wordsDict = [
   'water',
 ];
 
- class DictionaryHelper {
 
-   static getRandomWordOfLength(length: number): string {
-   const wordsOfLength = wordsDict.filter(word => word.length === length);
+ class DictionaryHelper {
+  static getRandomWordOfLength(length: number, usePresets = false): string {
+    const wordsOfLength = usePresets 
+      ? presetWordsDictionary.filter(word => word.length === length)
+      : wordsDictionary.filter(word => word.length === length);
 
    if(wordsOfLength.length === 0) {
       throw new Error(`No words found of length ${length}`);  
    }
 
    return wordsOfLength[Math.floor(Math.random() * wordsOfLength.length)];  
+  }
+
+  static isWordInDictionary(word: string): boolean {
+    return wordsDictionary.includes(word);
   }
 }
 

@@ -3,7 +3,6 @@ import './App.css'
 import KeyHelper from '../helpers/KeyHelper'
 import DictionaryHelper from '../helpers/DictionaryHelper'
 import { useEffect, useState } from 'react'
-import { TextField } from '@fluentui/react';
 
 //todo: implement default difficulty levels
 //todo: implement different word lengths selection
@@ -12,6 +11,7 @@ import { TextField } from '@fluentui/react';
 
 function App() {
   const [wordLength] = useState(5);
+  const [gameOver, setGameOver] = useState(false);
   const [randomWordToGuess] = useState<string>(DictionaryHelper.getRandomWordOfLength(5));
   const [currentRow, setCurrentRow] = useState(0);
   const [retries] = useState(6);
@@ -40,12 +40,25 @@ function CheckCurrentWord(word: string): string[] {
 
   if(word === randomWordToGuess) {
     alert('You guessed the word correctly!'); 
+    setGameOver(true);
+    return colors;
   }
 
   return colors;
 }
 
+function IsCurrentWordValid(currentWord: string) {
+  if (!DictionaryHelper.isWordInDictionary(currentWord)) {
+    alert('What kind of word is that? I can\'t find it in the dictionary!');
+    return false;
+  }
+
+  return true;
+}
+
+
 useEffect(() => {
+  if(!gameOver) {
   const BackspaceKeyPressed = () => {
     setWords((prevWords) => {
       const newWords = [...prevWords];
@@ -54,8 +67,27 @@ useEffect(() => {
     });
   };
 
+  //todo: fix 
+  // APPLE
+  // PAPER
+  // ERUPT
+  
   const EnterKeyPressed = () => {
     const currentWord = words[currentRow];
+
+    if(currentWord.length < wordLength) {
+      alert(`The word must be ${wordLength} letters long!`);  
+      return;
+    }
+
+    if(!IsCurrentWordValid(currentWord)){
+      return;
+    }
+
+    // if(currentWord.length === wordLength && currentRow === retries +1) {
+    // setGameOver(true);
+    // alert(`Game over! The word was: ${randomWordToGuess}`); 
+    // }
 
     if (currentWord.length === wordLength && !submittedRows[currentRow]) {
       setWords((prevWords) => {
@@ -79,15 +111,9 @@ useEffect(() => {
 
       setCurrentRow((prevRow) => Math.min(prevRow + 1, retries - 1));
     }
-
-    // if(currentWord.length < wordLength) {
-    //   //TODO FIX
-    //   console.log('Current Word has to have a length of ' + wordLength + ' letters. Current length is ' + currentWord.length);
-    // }
   };
 
   const removeListener = KeyHelper((key) => {
-
     if (key === 'Backspace') {
       if (!submittedRows[currentRow]) {
         BackspaceKeyPressed();
@@ -114,55 +140,76 @@ useEffect(() => {
   });
 
   return removeListener;
-}, [CheckCurrentWord, currentRow, retries, submittedRows, wordLength, words]);
-    
-  // console.log(randomWordToGuess);
+}
+}, [currentRow, retries, submittedRows, wordLength, words]);
+
  return (
-  <div
-    style={{
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '7px',
-      }}
-    >
-      {Array.from({ length: retries }).map((_, retryIndex) => (
-        <div
-          key={retryIndex}
-          style={{
-            display: 'flex',
-            gap: '7px',
-          }}
-        >
-          {Array.from({ length: wordLength }).map((_, index) => (
-            <TextField
-              key={`${retryIndex}-${index}`}
-              readOnly
-              value={words[retryIndex][index] ?? ''}
-              styles={{
-                root: { width: 50 },
-                field: {
-                  textAlign: 'center',
-                  fontSize: 24,
-                  fontWeight: 600,
-                  backgroundColor: submittedRows[retryIndex]
-                    ? rowColors[retryIndex][index]
-                    : undefined,
-                  color: submittedRows[retryIndex] ? '#ffffff' : undefined,
-                },
-              }}
-            />
+  <div className="game-page">
+    <header className="game-header">
+      <a className="brand" href="#top" aria-label="Wordle home">
+        <span className="brand-mark">W</span>
+        <span className="brand-name">WORDLE</span>
+      </a>
+      <div className="header-note">
+        <span className="header-note-dot" />
+        A LITTLE WORD BREAK
+      </div>
+    </header>
+
+    <main className="game-main" id="top">
+      <section className="game-intro" aria-labelledby="game-title">
+        <p className="eyebrow">THE DAILY WORD GAME</p>
+        <h1 id="game-title">Wordle<span>.</span></h1>
+        <p className="intro-copy">Find the hidden word in six tries.</p>
+      </section>
+
+      <section className="game-panel" aria-label="Wordle puzzle">
+        <div className="board-heading">
+          <span className="board-label">TODAY'S PUZZLE</span>
+          <span className="guess-count">
+            <strong>{submittedRows.filter(Boolean).length}</strong> / {retries} GUESSES
+          </span>
+        </div>
+
+        <div className="game-board" role="grid" aria-label="Six guesses, five letters each">
+          {Array.from({ length: retries }).map((_, retryIndex) => (
+            <div className="guess-row" role="row" key={retryIndex}>
+              {Array.from({ length: wordLength }).map((_, index) => {
+                const letter = words[retryIndex][index] ?? '';
+                const isSubmitted = submittedRows[retryIndex];
+
+                return (
+                  <div
+                    className={[
+                      'letter-tile',
+                      letter ? 'has-letter' : '',
+                      isSubmitted ? 'is-submitted' : '',
+                      retryIndex === currentRow && !isSubmitted ? 'is-current' : '',
+                    ].filter(Boolean).join(' ')}
+                    role="gridcell"
+                    aria-label={letter ? `Letter ${letter}` : 'Empty'}
+                    key={`${retryIndex}-${index}`}
+                    style={isSubmitted ? { backgroundColor: rowColors[retryIndex][index] } : undefined}
+                  >
+                    {letter}
+                  </div>
+                );
+              })}
+            </div>
           ))}
         </div>
-      ))}
-    </div>
+
+        <div className="board-footer">
+          <span className="keyboard-hint"><kbd>ENTER</kbd> to submit <span className="hint-divider">/</span> <kbd>BACKSPACE</kbd> to erase</span>
+          <span className="color-legend" aria-label="Color meanings">
+            <span className="legend-item"><i className="legend-swatch correct" /> Correct</span>
+            <span className="legend-item"><i className="legend-swatch present" /> In word</span>
+          </span>
+        </div>
+      </section>
+
+      <p className="game-footnote">A fresh five-letter puzzle, every day.</p>
+    </main>
   </div>
 );
 }

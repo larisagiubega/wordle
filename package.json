@@ -13,7 +13,8 @@
     "@fluentui/react": "^8.125.7",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "word-list": "^4.1.0"
+    "word-list": "^4.1.0",
+    "wordle-wordlist": "^1.0.1-c"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
