@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react'
 function App() {
   const [wordLength] = useState(5);
   const [gameOver, setGameOver] = useState(false);
+  const [notice, setNotice] = useState('');
   const [randomWordToGuess] = useState<string>(DictionaryHelper.getRandomWordOfLength(5));
   const [currentRow, setCurrentRow] = useState(0);
   const [retries] = useState(6);
@@ -22,6 +23,13 @@ function App() {
   const [rowColors, setRowColors] = useState<string[][]>(
     Array.from({ length: retries }, () => Array(wordLength).fill('#787c7e'))
   );
+
+useEffect(() => {
+  if (!notice) return;
+
+  const timeoutId = window.setTimeout(() => setNotice(''), 2400);
+  return () => window.clearTimeout(timeoutId);
+}, [notice]);
 
 
 // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -39,7 +47,7 @@ function CheckCurrentWord(word: string): string[] {
   }
 
   if(word === randomWordToGuess) {
-    alert('You guessed the word correctly!'); 
+    setNotice('You guessed the word correctly!');
     setGameOver(true);
     return colors;
   }
@@ -49,7 +57,7 @@ function CheckCurrentWord(word: string): string[] {
 
 function IsCurrentWordValid(currentWord: string) {
   if (!DictionaryHelper.isWordInDictionary(currentWord)) {
-    alert('What kind of word is that? I can\'t find it in the dictionary!');
+    setNotice("That word isn't in the dictionary. Try another.");
     return false;
   }
 
@@ -76,7 +84,7 @@ useEffect(() => {
     const currentWord = words[currentRow];
 
     if(currentWord.length < wordLength) {
-      alert(`The word must be ${wordLength} letters long!`);  
+      setNotice(`Your guess needs ${wordLength} letters.`);
       return;
     }
 
@@ -210,6 +218,7 @@ useEffect(() => {
 
       <p className="game-footnote">A fresh five-letter puzzle, every day.</p>
     </main>
+    {notice && <div className="game-toast" role="status">{notice}</div>}
   </div>
 );
 }
